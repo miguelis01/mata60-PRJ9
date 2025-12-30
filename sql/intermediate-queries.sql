@@ -1,4 +1,4 @@
-EXPLAIN ANALYZE
+-- Otimização de Recursos
 SELECT
     A.TP_CATEGORIA,
     COUNT(P.CD_CPF_PARTICIPANTE) AS total_participantes
@@ -11,7 +11,7 @@ JOIN
 GROUP BY
     A.TP_CATEGORIA;
 
-explain analyse
+-- Gerar informações consolidadas para apoio à tomada de decisão e análise de desempenho do evento
 SELECT
     E.DS_LOCAL,
     P.TP_CATEGORIA,
@@ -29,7 +29,7 @@ GROUP BY
 ORDER BY
     E.DS_LOCAL, P.TP_CATEGORIA;
 
-explain analyse
+-- Controlar pagamentos de inscrições, vinculando valores e datas conforme a categoria do participante
 SELECT
     P.TP_CATEGORIA,
     COUNT(PG.ID_PAGAMENTO) AS numero_de_pagamentos
@@ -42,7 +42,7 @@ JOIN
 GROUP BY
     P.TP_CATEGORIA;
 
-explain analyse
+-- Inteligência de Engajamento
 SELECT
     P.DS_NOME,
     COUNT(PA.ID_ATIVIDADE) AS total_atividades,
@@ -56,7 +56,7 @@ JOIN
 GROUP BY
     P.CD_CPF_PARTICIPANTE, P.DS_NOME;
 
-explain analyse
+-- Organizar a programação de atividades
 SELECT
     A.DS_NOME_ATIVIDADE,
     COUNT(PA.CD_CPF_PARTICIPANTE) AS num_participantes
@@ -73,6 +73,7 @@ GROUP BY
 ORDER BY
     num_participantes DESC;
 
+-- Gerenciar eventos, atividades e participantes, com controle detalhado de inscrições e categorias
 SELECT
     P.DS_NOME,
     P.DS_EMAIL,
@@ -90,6 +91,7 @@ HAVING
 ORDER BY
     QTD_ATIVIDADES DESC;
 
+-- Gestão Financeira e Auditoria
 SELECT
     PG.DT_PAGAMENTO,
     COUNT(PG.ID_PAGAMENTO) AS NUM_PAGAMENTOS_DIA,
@@ -108,6 +110,7 @@ GROUP BY
 ORDER BY
     PG.DT_PAGAMENTO;
 
+-- Gestão Financeira e Auditoria
 WITH PagamentosParticipante AS (
     SELECT
         P.DS_NOME,
@@ -131,6 +134,7 @@ SELECT
 FROM
     PagamentosParticipante;
 
+-- Otimização de Recursos
 SELECT
     E.DS_LOCAL AS EVENTO,
     A.TP_CATEGORIA AS TIPO_ATIVIDADE,
@@ -146,6 +150,7 @@ GROUP BY
 ORDER BY
     EVENTO, TOTAL_ATIVIDADES DESC;
 
+-- Monitoramento de Conversão
 SELECT
     P.DS_NOME,
     P.DS_EMAIL,
@@ -162,4 +167,3 @@ WHERE
     PG.ID_PAGAMENTO IS NULL
 GROUP BY
     P.CD_CPF_PARTICIPANTE, P.DS_NOME, P.DS_EMAIL;
-

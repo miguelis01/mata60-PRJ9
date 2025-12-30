@@ -1,3 +1,4 @@
+-- Otimização de Recursos
 -- 1 Total de participantes por evento
 -- Relações: 5 (TB_EVENTO, RL_ATIVIDADE_EVENTO, TB_ATIVIDADE, RL_PARTICIPANTE_ATIVIDADE, TB_PARTICIPANTE)
 -- Comandos: JOIN, GROUP BY, COUNT
@@ -12,6 +13,7 @@ JOIN RL_PARTICIPANTE_ATIVIDADE rpa ON rpa.ID_ATIVIDADE = a.ID_ATIVIDADE
 JOIN TB_PARTICIPANTE p ON p.CD_CPF_PARTICIPANTE = rpa.CD_CPF_PARTICIPANTE
 GROUP BY e.ID_EVENTO, e.DS_LOCAL;
 
+-- Gerar informações consolidadas para apoio à tomada de decisão e análise de desempenho do evento
 -- 2 Valor médio de pagamento por evento e categoria
 -- Relações: 6 (EVENTO, RL_ATIVIDADE_EVENTO, ATIVIDADE, RL_PARTICIPANTE_ATIVIDADE, PARTICIPANTE, PAGAMENTO)
 -- Comandos: JOIN, GROUP BY, COUNT, AVG
@@ -28,6 +30,7 @@ JOIN TB_PARTICIPANTE p ON p.CD_CPF_PARTICIPANTE = rpa.CD_CPF_PARTICIPANTE
 JOIN TB_PAGAMENTO pg ON pg.ID_INSCRICAO = p.ID_INSCRICAO
 GROUP BY e.ID_EVENTO, e.DS_LOCAL, p.TP_CATEGORIA;
 
+-- Otimização de Recursos
 -- 3 Evento(s) com o maior número de atividades
 -- Relações: 3 (EVENTO, RL_ATIVIDADE_EVENTO, ATIVIDADE)
 -- Comandos: JOIN, GROUP BY, COUNT, SUBCONSULTA
@@ -44,6 +47,7 @@ HAVING COUNT(rae.ID_ATIVIDADE) >= ALL (
     GROUP BY ID_EVENTO
 );
 
+-- Gestão Financeira e Auditoria
 -- 4 Participantes com pagamento acima da média da própria categoria
 -- Relações: 4 (PARTICIPANTE, PAGAMENTO, subconsulta PARTICIPANTE + PAGAMENTO)
 -- Comandos: JOIN, SUBCONSULTA, GROUP BY (implícito em AVG)
@@ -52,7 +56,8 @@ SELECT
     P1.TP_CATEGORIA,
     PG1.VL_PAGAMENTO
 FROM TB_PARTICIPANTE P1
-JOIN TB_PAGAMENTO PG1 ON P1.ID_INSCRICAO = PG1.ID_INSCRICAO
+JOIN TB_INSCRICAO I1 ON P1.ID_INSCRICAO = I1.ID_INSCRICAO
+JOIN TB_PAGAMENTO PG1 ON I1.ID_INSCRICAO = PG1.ID_INSCRICAO
 WHERE PG1.VL_PAGAMENTO > (
     SELECT AVG(PG2.VL_PAGAMENTO)
     FROM TB_PAGAMENTO PG2
@@ -60,6 +65,7 @@ WHERE PG1.VL_PAGAMENTO > (
     WHERE P2.TP_CATEGORIA = P1.TP_CATEGORIA
 );
 
+-- Inteligência de Engajamento
 -- 5 Participantes com mais de uma atividade e que pagaram
 -- Relações: 3 (PARTICIPANTE, RL_PARTICIPANTE_ATIVIDADE, PAGAMENTO)
 -- Comandos: JOIN, GROUP BY, COUNT, HAVING
@@ -73,6 +79,7 @@ JOIN TB_PAGAMENTO pg ON pg.ID_INSCRICAO = p.ID_INSCRICAO
 GROUP BY p.DS_NOME
 HAVING COUNT(rpa.ID_ATIVIDADE) > 1;
 
+-- Registrar e associar artigos científicos submetidos às atividades dos eventos
 -- 6 Artigos e seus eventos (comparação elemento a elemento ANY)
 -- Relações: 5 (ARTIGO, RL_ARTIGO_ATIVIDADE, ATIVIDADE, RL_ATIVIDADE_EVENTO, EVENTO)
 -- Comandos: JOIN, GROUP BY, COUNT, ANY
@@ -92,6 +99,7 @@ WHERE e.ID_EVENTO = ANY (
 )
 GROUP BY a.ID_ARTIGO, a.DS_TITULO, e.DS_LOCAL;
 
+-- Gestão Financeira e Auditoria
 -- 7 Pagamentos acima da média geral e maiores que qualquer da categoria 2
 -- Relações: 4 (PARTICIPANTE, PAGAMENTO, subconsulta PARTICIPANTE + PAGAMENTO)
 -- Comandos: JOIN, SUBCONSULTA, ANY
@@ -99,7 +107,8 @@ SELECT
     p.DS_NOME,
     pg.VL_PAGAMENTO
 FROM TB_PARTICIPANTE p
-JOIN TB_PAGAMENTO pg ON p.ID_INSCRICAO = pg.ID_INSCRICAO
+JOIN TB_INSCRICAO i ON p.ID_INSCRICAO = i.ID_INSCRICAO
+JOIN TB_PAGAMENTO pg ON i.ID_INSCRICAO = pg.ID_INSCRICAO
 WHERE pg.VL_PAGAMENTO > (
     SELECT AVG(VL_PAGAMENTO) FROM TB_PAGAMENTO
 )
@@ -110,6 +119,7 @@ AND pg.VL_PAGAMENTO > ANY (
     WHERE P2.TP_CATEGORIA = 2
 );
 
+-- Inteligência de Engajamento
 -- 8 Ranking de pagamentos por categoria
 -- Relações: 3 (PARTICIPANTE, PAGAMENTO, INSCRICAO)
 -- Comandos: JOIN, WINDOW (RANK), GROUP BY
@@ -122,6 +132,7 @@ FROM TB_PARTICIPANTE p
 JOIN TB_PAGAMENTO pg ON p.ID_INSCRICAO = pg.ID_INSCRICAO
 JOIN TB_INSCRICAO i ON i.ID_INSCRICAO = p.ID_INSCRICAO;
 
+-- Gerar informações consolidadas para apoio à tomada de decisão e análise de desempenho do evento
 -- 9 Eventos com média de pagamento maior que a média geral
 -- Relações: 6 (EVENTO, RL_ATIVIDADE_EVENTO, ATIVIDADE, RL_PARTICIPANTE_ATIVIDADE, PARTICIPANTE, PAGAMENTO)
 -- Comandos: JOIN, GROUP BY, COUNT, SUBCONSULTA
@@ -140,6 +151,7 @@ HAVING AVG(pg.VL_PAGAMENTO) > (
     SELECT AVG(VL_PAGAMENTO) FROM TB_PAGAMENTO
 );
 
+-- Gestão Financeira e Auditoria
 -- 10 Diferença de pagamento e média da categoria
 -- Relações: 3 (PARTICIPANTE, PAGAMENTO, INSCRICAO)
 -- Comandos: JOIN, WINDOW (AVG OVER), GROUP BY
@@ -152,6 +164,7 @@ FROM TB_PARTICIPANTE p
 JOIN TB_PAGAMENTO pg ON p.ID_INSCRICAO = pg.ID_INSCRICAO
 JOIN TB_INSCRICAO i ON i.ID_INSCRICAO = p.ID_INSCRICAO;
 
+-- Registrar e associar artigos científicos submetidos às atividades dos eventos
 -- 11 Total de artigos por evento
 -- Relações: 4 (EVENTO, RL_ATIVIDADE_EVENTO, RL_ARTIGO_ATIVIDADE, ARTIGO)
 -- Comandos: JOIN, GROUP BY, COUNT
@@ -164,6 +177,7 @@ JOIN RL_ARTIGO_ATIVIDADE raa ON raa.ID_ATIVIDADE = rae.ID_ATIVIDADE
 JOIN TB_ARTIGO a ON a.ID_ARTIGO = raa.ID_ARTIGO
 GROUP BY e.DS_LOCAL;
 
+-- Controlar pagamentos de inscrições, vinculando valores e datas conforme a categoria do participante
 -- 12 Participantes com maior valor pago 
 -- Relações: 3 (PARTICIPANTE, PAGAMENTO, INSCRICAO)
 -- Comandos: JOIN, SUBCONSULTA, GROUP BY
@@ -177,6 +191,7 @@ WHERE pg.VL_PAGAMENTO >= ALL (
     SELECT VL_PAGAMENTO FROM TB_PAGAMENTO
 );
 
+-- Gerenciar eventos, atividades e participantes, com controle detalhado de inscrições e categorias
 -- 13 Participantes e quantidade de atividades por evento
 -- Relações: 5 (PARTICIPANTE, RL_PARTICIPANTE_ATIVIDADE, ATIVIDADE, RL_ATIVIDADE_EVENTO, EVENTO)
 -- Comandos: JOIN, GROUP BY, COUNT
@@ -192,6 +207,7 @@ JOIN RL_PARTICIPANTE_ATIVIDADE rpa ON rpa.ID_ATIVIDADE = a.ID_ATIVIDADE
 JOIN TB_PARTICIPANTE p ON p.CD_CPF_PARTICIPANTE = rpa.CD_CPF_PARTICIPANTE
 GROUP BY e.ID_EVENTO, e.DS_LOCAL, p.DS_NOME;
 
+-- Gerar informações consolidadas para apoio à tomada de decisão e análise de desempenho do evento
 -- 14 Total pago por evento
 -- Relações: 6 (EVENTO, RL_ATIVIDADE_EVENTO, ATIVIDADE, RL_PARTICIPANTE_ATIVIDADE, PARTICIPANTE, PAGAMENTO)
 -- Comandos: JOIN, GROUP BY, COUNT, SUM
@@ -206,6 +222,7 @@ JOIN TB_PARTICIPANTE p ON p.CD_CPF_PARTICIPANTE = rpa.CD_CPF_PARTICIPANTE
 JOIN TB_PAGAMENTO pg ON pg.ID_INSCRICAO = p.ID_INSCRICAO
 GROUP BY e.DS_LOCAL;
 
+-- Monitoramento de Conversão
 -- 15 Percentual de participantes que efetuaram pagamento 
 -- Relações: 3 (PARTICIPANTE, INSCRICAO, PAGAMENTO)
 -- Comandos: JOIN, COUNT, SUBCONSULTA
@@ -219,6 +236,7 @@ SELECT
 FROM TB_PARTICIPANTE p
 JOIN TB_INSCRICAO i ON i.ID_INSCRICAO = p.ID_INSCRICAO;
 
+-- Assegurar integridade referencial e consistência por meio de chaves primárias, estrangeiras, únicas e restrições de formato
 -- 16 Eventos com artigos e participantes (duas subconsultas EXISTS)
 -- Relações: 5 (EVENTO, subconsulta 1 com RL_ATIVIDADE_EVENTO + RL_ARTIGO_ATIVIDADE, subconsulta 2 com RL_ATIVIDADE_EVENTO + RL_PARTICIPANTE_ATIVIDADE)
 -- Comandos: SUBCONSULTA, EXISTS, COUNT
@@ -237,6 +255,7 @@ AND EXISTS (
     WHERE rae.ID_EVENTO = e.ID_EVENTO
 );
 
+-- Gestão Financeira e Auditoria
 -- 17 Participantes com pagamento abaixo da média da categoria
 -- Relações: 4 (PARTICIPANTE, PAGAMENTO, subconsulta PARTICIPANTE + PAGAMENTO)
 -- Comandos: JOIN, SUBCONSULTA, GROUP BY
@@ -253,6 +272,7 @@ WHERE PG1.VL_PAGAMENTO < (
     WHERE P2.TP_CATEGORIA = P1.TP_CATEGORIA
 );
 
+-- Gerar informações consolidadas para apoio à tomada de decisão e análise de desempenho do evento
 -- 18 Valor médio e máximo de pagamento por evento
 -- Relações: 6 (EVENTO, RL_ATIVIDADE_EVENTO, ATIVIDADE, RL_PARTICIPANTE_ATIVIDADE, PARTICIPANTE, PAGAMENTO)
 -- Comandos: JOIN, GROUP BY, COUNT, MAX, AVG
@@ -268,6 +288,7 @@ JOIN TB_PARTICIPANTE p ON p.CD_CPF_PARTICIPANTE = rpa.CD_CPF_PARTICIPANTE
 JOIN TB_PAGAMENTO pg ON pg.ID_INSCRICAO = p.ID_INSCRICAO
 GROUP BY e.DS_LOCAL;
 
+-- Registrar e associar artigos científicos submetidos às atividades dos eventos
 -- 19 Artigos em eventos com mais de duas atividades
 -- Relações: 4 (ARTIGO, RL_ARTIGO_ATIVIDADE, RL_ATIVIDADE_EVENTO, EVENTO)
 -- Comandos: JOIN, GROUP BY, COUNT, SUBCONSULTA
@@ -286,6 +307,7 @@ WHERE e.ID_EVENTO IN (
 )
 GROUP BY a.DS_TITULO, e.DS_LOCAL;
 
+-- Gestão Financeira e Auditoria
 -- 20 Participantes com pagamento igual à média geral (refeito com 3+ tabelas)
 -- Relações: 3 (PARTICIPANTE, PAGAMENTO, INSCRICAO)
 -- Comandos: JOIN, SUBCONSULTA, GROUP BY
